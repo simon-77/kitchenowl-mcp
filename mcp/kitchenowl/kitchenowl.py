@@ -18,11 +18,12 @@ class KitchenOwlClient:
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json",
         })
+        self._default_list_id: int | None = None
 
     def _request(self, method, path, **kwargs):
         url = f"{self.base_url}{path}"
         try:
-            resp = self.session.request(method, url, verify=self.verify_ssl, **kwargs)
+            resp = self.session.request(method, url, verify=self.verify_ssl, timeout=(5, 30), **kwargs)
         except requests.ConnectionError as e:
             raise KitchenOwlError(f"Connection failed: {e}")
         if resp.status_code == 401:
@@ -39,7 +40,8 @@ class KitchenOwlClient:
         return self._request("GET", path, params={k: v for k, v in params.items() if v is not None})
 
     def _post(self, path, data=None):
-        return self._request("POST", path, json=data or {})
+        kwargs = {"json": data} if data is not None else {}
+        return self._request("POST", path, **kwargs)
 
     def _delete(self, path):
         return self._request("DELETE", path)
@@ -72,10 +74,13 @@ class KitchenOwlClient:
 
     # ── Shopping List ─────────────────────────────────────────────────
     def _get_default_list_id(self) -> int:
-        lists = self._get(f"/api/household/{self.household_id}/shoppinglist")
-        if isinstance(lists, list) and lists:
-            return lists[0]["id"]
-        return 1
+        if self._default_list_id is None:
+            lists = self._get(f"/api/household/{self.household_id}/shoppinglist")
+            if isinstance(lists, list) and lists:
+                self._default_list_id = lists[0].get("id", 1)
+            else:
+                self._default_list_id = 1
+        return self._default_list_id
 
     def get_shopping_list(self):
         list_id = self._get_default_list_id()
