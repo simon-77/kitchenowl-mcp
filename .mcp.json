@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "kitchenowl": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "-e", "KITCHENOWL_URL",
+        "-e", "KITCHENOWL_TOKEN",
+        "-e", "KITCHENOWL_HOUSEHOLD_ID",
+        "-e", "KITCHENOWL_VERIFY_SSL",
+        "kitchenowl-mcp:latest"
+      ]
+    }
+  }
+}
