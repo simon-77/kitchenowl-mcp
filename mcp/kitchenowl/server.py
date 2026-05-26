@@ -35,7 +35,7 @@ def list_recipes(page: int = 0, per_page: int = 20) -> dict | list:
 
 @mcp.tool()
 def search_recipes(query: str) -> dict | list:
-    """Search recipes by name or ingredient."""
+    """Search recipes by name (client-side filter — returns recipes whose name contains query)."""
     return _run(client().search_recipes, query)
 
 
@@ -93,7 +93,7 @@ def add_recipe_to_shopping_list(recipe_id: int) -> dict:
 
 @mcp.tool()
 def check_off_shopping_item(item_id: int) -> dict:
-    """Mark a shopping list item as checked (use item_id from get_shopping_list)."""
+    """Remove a shopping list item by marking it done (KitchenOwl has no check-off state — this removes the item)."""
     return _run(client().check_off_shopping_item, item_id)
 
 
@@ -113,7 +113,7 @@ def get_meal_plan() -> dict | list:
 
 @mcp.tool()
 def add_to_meal_plan(recipe_id: int, date: str = "") -> dict:
-    """Add a recipe to the meal plan. date format: YYYY-MM-DD (optional; omit for unscheduled)."""
+    """Add a recipe to the meal plan. date: YYYY-MM-DD (optional — omit to add as unscheduled)."""
     return _run(client().add_to_meal_plan, recipe_id, date or None)
 
 

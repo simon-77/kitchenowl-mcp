@@ -54,8 +54,12 @@ class KitchenOwlClient:
                          offset=page * per_page, limit=per_page)
 
     def search_recipes(self, query: str):
-        # endpoint verified (query param is ignored server-side but call succeeds)
-        return self._get(f"/api/household/{self.household_id}/recipe", query=query)
+        # server-side query param is ignored — filter client-side by name
+        results = self._get(f"/api/household/{self.household_id}/recipe")
+        if isinstance(results, list):
+            q = query.lower()
+            return [r for r in results if q in r.get("name", "").lower()]
+        return results
 
     def get_recipe(self, recipe_id: int):
         # endpoint verified
@@ -136,7 +140,7 @@ class KitchenOwlClient:
         )
 
     def check_off_shopping_item(self, item_id: int):
-        # KitchenOwl has no "check off" state — checking off = removing from the list.
+        # KitchenOwl has no check-off state — this removes the item from the list
         return self.remove_from_shopping_list(item_id)
 
     # ── Meal Plan ─────────────────────────────────────────────────────
@@ -146,10 +150,9 @@ class KitchenOwlClient:
 
     def add_to_meal_plan(self, recipe_id: int, date: str | None = None):
         # endpoint verified: POST /api/household/{hh}/planner/recipe
-        # date (ISO) is optional; omitting it adds to "unscheduled" slot
+        # API requires cooking_date as Unix ms; omit for unscheduled
         payload: dict = {"recipe_id": recipe_id}
         if date:
-            # API accepts cooking_date as Unix ms timestamp
             d = _dt.date.fromisoformat(date)
             epoch = _dt.datetime(d.year, d.month, d.day, tzinfo=_dt.timezone.utc)
             payload["cooking_date"] = int(epoch.timestamp() * 1000)
@@ -160,5 +163,5 @@ class KitchenOwlClient:
 
     def remove_from_meal_plan(self, recipe_id: int):
         # endpoint verified: DELETE /api/household/{hh}/planner/recipe/{recipe_id}
-        # Note: identifies by recipe_id (not a plan-item id)
+        # KitchenOwl API identifies planner entries by recipe_id, not a separate plan-item id
         return self._delete(f"/api/household/{self.household_id}/planner/recipe/{recipe_id}")

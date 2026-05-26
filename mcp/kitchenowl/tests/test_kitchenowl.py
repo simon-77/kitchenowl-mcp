@@ -53,6 +53,34 @@ def test_add_recipe_to_shopping_builds_payload(client, mock_get):
     assert payload[0]["name"] == "Nudeln"
 
 
+def test_search_recipes_filters_by_name(client, mock_get):
+    mock_get([{"id": 1, "name": "Pasta Bolognese"}, {"id": 2, "name": "Hühnchen"}])
+    result = client.search_recipes("pasta")
+    assert len(result) == 1
+    assert result[0]["name"] == "Pasta Bolognese"
+
+
+def test_add_to_meal_plan_date_as_unix_ms(client):
+    """ISO date '2026-01-15' must be sent as Unix ms timestamp."""
+    calls = []
+
+    def fake_request(method, url, **kwargs):
+        calls.append(kwargs)
+        resp = Mock()
+        resp.status_code = 200
+        resp.content = b"x"
+        resp.json.return_value = {}
+        return resp
+
+    client.session.request = fake_request
+    client.add_to_meal_plan(42, "2026-01-15")
+    assert calls, "no request made"
+    payload = calls[0]["json"]
+    assert payload["recipe_id"] == 42
+    # 2026-01-15 UTC midnight = 1768435200000 ms
+    assert payload["cooking_date"] == 1768435200000
+
+
 def test_all_tools_registered():
     import os
     os.environ.setdefault("KITCHENOWL_URL", "https://kitchenowl.test")
