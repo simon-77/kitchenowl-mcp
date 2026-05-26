@@ -4,10 +4,7 @@
       "command": "docker",
       "args": [
         "run", "--rm", "-i",
-        "-e", "KITCHENOWL_URL",
-        "-e", "KITCHENOWL_TOKEN",
-        "-e", "KITCHENOWL_HOUSEHOLD_ID",
-        "-e", "KITCHENOWL_VERIFY_SSL",
+        "--env-file", "/home/simon/etc/mcp/kitchenowl.env",
         "kitchenowl-mcp:latest"
       ]
     }
