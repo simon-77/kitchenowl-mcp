@@ -47,13 +47,13 @@ def get_recipe(recipe_id: int) -> dict:
 
 @mcp.tool()
 def get_trashed_recipes() -> dict | list:
-    """List recipes in the KitchenOwl trash."""
+    """List recipes in the KitchenOwl trash. NOTE: KitchenOwl does not support a trash bin — recipes are permanently deleted."""
     return _run(client().get_trashed_recipes)
 
 
 @mcp.tool()
 def restore_recipe(recipe_id: int) -> dict:
-    """Restore a recipe from the trash."""
+    """Restore a recipe from the trash. NOTE: KitchenOwl does not support recipe restore."""
     return _run(client().restore_recipe, recipe_id)
 
 
@@ -61,13 +61,13 @@ def restore_recipe(recipe_id: int) -> dict:
 
 @mcp.tool()
 def get_favorites() -> dict | list:
-    """Get all favorited recipes."""
+    """Get all favorited recipes. NOTE: KitchenOwl favorites are client-side only — no server API exists."""
     return _run(client().get_favorites)
 
 
 @mcp.tool()
 def toggle_favorite(recipe_id: int) -> dict:
-    """Add or remove a recipe from favorites."""
+    """Add or remove a recipe from favorites. NOTE: KitchenOwl favorites are client-side only — no server API exists."""
     return _run(client().toggle_favorite, recipe_id)
 
 
@@ -80,9 +80,9 @@ def get_shopping_list() -> dict | list:
 
 
 @mcp.tool()
-def add_to_shopping_list(name: str, amount: str = "") -> dict:
-    """Add a single item to the shopping list. amount is optional (e.g. '200 g')."""
-    return _run(client().add_to_shopping_list, name, amount or None)
+def add_to_shopping_list(name: str, description: str = "") -> dict:
+    """Add a single item to the shopping list. description is optional (e.g. '200 g')."""
+    return _run(client().add_to_shopping_list, name, description or None)
 
 
 @mcp.tool()
@@ -107,20 +107,20 @@ def remove_from_shopping_list(item_id: int) -> dict:
 
 @mcp.tool()
 def get_meal_plan() -> dict | list:
-    """Get current meal plan. Each entry has id, recipe_id, day."""
+    """Get current meal plan. Each entry has recipe_id, day, cooking_date."""
     return _run(client().get_meal_plan)
 
 
 @mcp.tool()
 def add_to_meal_plan(recipe_id: int, date: str = "") -> dict:
-    """Add a recipe to the meal plan. date format: YYYY-MM-DD (default: today)."""
+    """Add a recipe to the meal plan. date format: YYYY-MM-DD (optional; omit for unscheduled)."""
     return _run(client().add_to_meal_plan, recipe_id, date or None)
 
 
 @mcp.tool()
-def remove_from_meal_plan(plan_item_id: int) -> dict:
-    """Remove an entry from the meal plan (use id from get_meal_plan)."""
-    return _run(client().remove_from_meal_plan, plan_item_id)
+def remove_from_meal_plan(recipe_id: int) -> dict:
+    """Remove a recipe from the meal plan (use recipe_id from get_meal_plan)."""
+    return _run(client().remove_from_meal_plan, recipe_id)
 
 
 if __name__ == "__main__":

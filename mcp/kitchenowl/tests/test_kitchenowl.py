@@ -12,21 +12,45 @@ def test_401_raises_descriptive_error(client, mock_get):
     with pytest.raises(KitchenOwlError, match="Token invalid"):
         client.list_recipes()
 
-def test_add_recipe_to_shopping_amount_formatting():
-    """Unit test for amount string assembly — no HTTP needed."""
-    items = [
-        {"name": "Nudeln", "amount": 200, "unit": "g"},
-        {"name": "Salz", "amount": "", "unit": ""},
-        {"name": "Öl", "amount": 2, "unit": ""},
-    ]
-    amounts = []
-    for item in items:
-        parts = [str(item.get("amount", "")), item.get("unit", "")]
-        amount = " ".join(p for p in parts if p).strip()
-        amounts.append(amount)
-    assert amounts[0] == "200 g"
-    assert amounts[1] == ""
-    assert amounts[2] == "2"
+def test_add_recipe_to_shopping_builds_payload(client, mock_get):
+    """add_recipe_to_shopping_list calls recipeitems endpoint with correct payload."""
+    recipe = {
+        "id": 5,
+        "name": "Pasta",
+        "items": [
+            {"id": 1, "name": "Nudeln", "description": "200 g", "optional": False},
+            {"id": 2, "name": "Salz", "description": "", "optional": False},
+            {"name": "No ID item"},  # should be skipped (no id)
+        ],
+    }
+    calls = []
+    from unittest.mock import Mock
+
+    def fake_request(method, url, **kwargs):
+        calls.append((method, url, kwargs))
+        resp = Mock()
+        resp.status_code = 200
+        resp.content = b"x"
+        # First call: get_recipe; subsequent: shoppinglist list; then recipeitems
+        if method == "GET" and "/recipe/5" in url:
+            resp.json.return_value = recipe
+        elif method == "GET" and "/shoppinglist" in url:
+            resp.json.return_value = [{"id": 1, "name": "Default", "items": []}]
+        else:
+            resp.json.return_value = {}
+        return resp
+
+    client.session.request = fake_request
+
+    result = client.add_recipe_to_shopping_list(5)
+    assert result["added"] == 2  # "No ID item" skipped
+    assert result["recipe"] == "Pasta"
+    # Verify the recipeitems call was made with correct payload
+    recipe_items_call = [c for c in calls if "recipeitems" in c[1]]
+    assert len(recipe_items_call) == 1
+    payload = recipe_items_call[0][2]["json"]["items"]
+    assert len(payload) == 2
+    assert payload[0]["name"] == "Nudeln"
 
 
 def test_all_tools_registered():
