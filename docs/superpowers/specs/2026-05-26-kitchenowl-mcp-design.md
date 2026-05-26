@@ -5,7 +5,7 @@
 
 ## Overview
 
-MCP-Server für KitchenOwl (self-hosted unter `kitchenowl.aster.wien`), der Claude direkten Zugriff auf Rezepte, Shopping-Liste und Meal Plan gibt. Präferenzen werden lokal in `chef.md` gepflegt; KitchenOwl-Favorites für schnelles In-App-Markieren.
+MCP-Server für KitchenOwl (self-hosted), der Claude direkten Zugriff auf Rezepte, Shopping-Liste und Meal Plan gibt. Präferenzen werden lokal in `chef.md` gepflegt; KitchenOwl-Favorites für schnelles In-App-Markieren.
 
 ## Architektur
 
@@ -23,7 +23,7 @@ kochen/
 **Laufzeit:** Docker-Container, via stdio in `.mcp.json` eingebunden.
 
 **Konfiguration (ENV):**
-- `KITCHENOWL_URL` — z.B. `https://kitchenowl.aster.wien`
+- `KITCHENOWL_URL` — z.B. `https://your-kitchenowl.example.com`
 - `KITCHENOWL_TOKEN` — Long-Lived Token (LLT)
 - `KITCHENOWL_HOUSEHOLD_ID` — Default `1` (die meisten Self-Hosted-Instanzen haben nur eine)
 

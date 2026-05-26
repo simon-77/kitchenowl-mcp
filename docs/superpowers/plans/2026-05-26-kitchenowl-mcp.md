@@ -476,7 +476,7 @@ Expected: all PASS including `test_all_tools_registered`.
 
 ```bash
 cd mcp/kitchenowl
-KITCHENOWL_URL=https://kitchenowl.aster.wien \
+KITCHENOWL_URL=https://your-kitchenowl.example.com \
 KITCHENOWL_TOKEN=dummy \
 ./venv/bin/python -c "import server; print('tools:', len(list(server.mcp._tool_manager._tools)))"
 ```
@@ -554,7 +554,7 @@ git commit -m "feat: Docker build for kitchenowl-mcp"
 `/home/simon/Nextcloud/Aster/Agents/projects/kochen/.env.template`:
 ```bash
 # KitchenOwl MCP — copy to .env and fill in your values
-KITCHENOWL_URL=https://kitchenowl.aster.wien
+KITCHENOWL_URL=https://your-kitchenowl.example.com
 KITCHENOWL_TOKEN=<paste your Long-Lived Token here>
 KITCHENOWL_HOUSEHOLD_ID=1
 # Set to false if using a self-signed certificate
