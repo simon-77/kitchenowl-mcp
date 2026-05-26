@@ -1,6 +1,6 @@
+import datetime as _dt
 import os
 import requests
-from datetime import date as _date
 
 
 class KitchenOwlError(Exception):
@@ -150,7 +150,6 @@ class KitchenOwlClient:
         payload: dict = {"recipe_id": recipe_id}
         if date:
             # API accepts cooking_date as Unix ms timestamp
-            import datetime as _dt
             d = _dt.date.fromisoformat(date)
             epoch = _dt.datetime(d.year, d.month, d.day, tzinfo=_dt.timezone.utc)
             payload["cooking_date"] = int(epoch.timestamp() * 1000)
