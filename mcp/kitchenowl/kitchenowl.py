@@ -80,7 +80,7 @@ class KitchenOwlClient:
 
     def create_recipe(self, name: str, description: str = "", items: list | None = None,
                       steps: list | None = None, tags: list | None = None,
-                      time: int = 0, yields: str = "", source: str = "") -> dict:
+                      time: int = 0, yields: int = 0, source: str = "") -> dict:
         payload = {
             "name": name,
             "description": description,
@@ -95,7 +95,7 @@ class KitchenOwlClient:
 
     def update_recipe(self, recipe_id: int, name: str | None = None, description: str | None = None,
                       items: list | None = None, steps: list | None = None, tags: list | None = None,
-                      time: int | None = None, yields: str | None = None, source: str | None = None) -> dict:
+                      time: int | None = None, yields: int | None = None, source: str | None = None) -> dict:
         payload: dict = {}
         if name is not None:
             payload["name"] = name

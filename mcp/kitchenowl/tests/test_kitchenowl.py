@@ -100,7 +100,7 @@ def test_create_recipe_builds_correct_payload(client):
         steps=["Schritt 1", "Schritt 2"],
         tags=["mediterran"],
         time=30,
-        yields="2 Portionen",
+        yields=2,
     )
     assert result["id"] == 99
     assert len(calls) == 1
@@ -111,7 +111,7 @@ def test_create_recipe_builds_correct_payload(client):
     assert payload["name"] == "Test"
     assert payload["description"] == "Desc"
     assert payload["time"] == 30
-    assert payload["yields"] == "2 Portionen"
+    assert payload["yields"] == 2
     assert payload["items"] == [{"name": "Mehl", "description": "200 g", "optional": False}]
     assert payload["steps"] == [{"text": "Schritt 1"}, {"text": "Schritt 2"}]
     assert payload["tags"] == [{"name": "mediterran"}]

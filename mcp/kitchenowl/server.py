@@ -53,14 +53,14 @@ def create_recipe(
     steps: list[str] | None = None,
     tags: list[str] | None = None,
     time: int = 0,
-    yields: str = "",
+    yields: int = 0,
     source: str = "",
 ) -> dict:
     """Create a new recipe in KitchenOwl.
     items: [{"name": "Flour", "description": "200 g"}] — description holds amount/unit.
     steps: list of step texts (plain strings).
     tags: list of tag name strings.
-    time: total time in minutes. yields: e.g. '4 Portionen'."""
+    time: total time in minutes. yields: number of servings (integer)."""
     return _run(client().create_recipe, name=name, description=description,
                 items=items, steps=steps, tags=tags, time=time, yields=yields, source=source)
 
@@ -74,7 +74,7 @@ def update_recipe(
     steps: list[str] | None = None,
     tags: list[str] | None = None,
     time: int | None = None,
-    yields: str | None = None,
+    yields: int | None = None,
     source: str | None = None,
 ) -> dict:
     """Update an existing recipe (partial — only provided fields are changed).
