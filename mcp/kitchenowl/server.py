@@ -86,6 +86,18 @@ def update_recipe(
 
 
 @mcp.tool()
+def delete_recipe(recipe_id: int) -> dict:
+    """Permanently delete a recipe. This cannot be undone. Get recipe_id via list_recipes or search_recipes first."""
+    return _run(client().delete_recipe, recipe_id)
+
+
+@mcp.tool()
+def list_tags() -> list:
+    """List all available tags in KitchenOwl. Use tag names from this list when calling create_recipe or update_recipe."""
+    return _run(client().list_tags)
+
+
+@mcp.tool()
 def get_trashed_recipes() -> dict | list:
     """List recipes in the KitchenOwl trash. NOTE: KitchenOwl does not support a trash bin — recipes are permanently deleted."""
     return _run(client().get_trashed_recipes)

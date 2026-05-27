@@ -154,6 +154,31 @@ def test_update_recipe_raises_when_no_fields(client):
         client.update_recipe(recipe_id=5)
 
 
+def test_delete_recipe_calls_delete_endpoint(client):
+    calls = []
+
+    def fake_request(method, url, **kwargs):
+        calls.append((method, url, kwargs))
+        resp = Mock()
+        resp.status_code = 200
+        resp.content = b"x"
+        resp.json.return_value = {}
+        return resp
+
+    client.session.request = fake_request
+    client.delete_recipe(42)
+    assert len(calls) == 1
+    assert calls[0][0] == "DELETE"
+    assert "/recipe/42" in calls[0][1]
+
+
+def test_list_tags_returns_list(client, mock_get):
+    mock_get([{"id": 1, "name": "vegetarisch"}, {"id": 2, "name": "schnell"}])
+    result = client.list_tags()
+    assert len(result) == 2
+    assert result[0]["name"] == "vegetarisch"
+
+
 def test_all_tools_registered():
     import os
     os.environ.setdefault("KITCHENOWL_URL", "https://kitchenowl.test")
@@ -162,7 +187,8 @@ def test_all_tools_registered():
     tool_names = set(server.mcp._tool_manager._tools.keys())
     expected = {
         "list_recipes", "search_recipes", "get_recipe",
-        "create_recipe", "update_recipe",
+        "create_recipe", "update_recipe", "delete_recipe",
+        "list_tags",
         "get_trashed_recipes", "restore_recipe",
         "get_favorites", "toggle_favorite",
         "get_shopping_list", "add_to_shopping_list",

@@ -131,6 +131,12 @@ class KitchenOwlClient:
             raise KitchenOwlError("No fields provided to update.")
         return self._post(f"/api/household/{self.household_id}/recipe/{recipe_id}", payload)
 
+    def delete_recipe(self, recipe_id: int) -> dict:
+        return self._delete(f"/api/household/{self.household_id}/recipe/{recipe_id}")
+
+    def list_tags(self) -> list:
+        return self._get(f"/api/household/{self.household_id}/tag") or []
+
     def get_trashed_recipes(self):
         # KitchenOwl has no server-side trash — recipes are hard-deleted.
         # This feature does not exist in the API.

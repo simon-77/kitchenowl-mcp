@@ -1,6 +1,6 @@
 # kitchenowl-mcp
 
-MCP server for [KitchenOwl](https://kitchenowl.org) — gives AI assistants (Claude, etc.) access to your self-hosted KitchenOwl recipes, shopping list, and meal plan via 17 tools.
+MCP server for [KitchenOwl](https://kitchenowl.org) — gives AI assistants (Claude, etc.) access to your self-hosted KitchenOwl recipes, shopping list, and meal plan via 19 tools.
 
 Built with [FastMCP](https://github.com/jlowin/fastmcp) (Python), runs as a Docker container over stdio.
 
@@ -13,6 +13,8 @@ Built with [FastMCP](https://github.com/jlowin/fastmcp) (Python), runs as a Dock
 | | `get_recipe` | Full recipe with ingredients and steps |
 | | `create_recipe` | Create a new recipe with ingredients, steps, and tags |
 | | `update_recipe` | Update an existing recipe (partial — only provided fields changed) |
+| | `delete_recipe` | Permanently delete a recipe (cannot be undone) |
+| | `list_tags` | List all available tags (use names when creating/updating recipes) |
 | | `get_trashed_recipes` | *(see Known Limitations)* |
 | | `restore_recipe` | *(see Known Limitations)* |
 | **Favorites** | `get_favorites` | *(see Known Limitations)* |
