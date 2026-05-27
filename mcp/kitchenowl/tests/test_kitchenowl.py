@@ -89,7 +89,10 @@ def test_create_recipe_builds_correct_payload(client):
         resp = Mock()
         resp.status_code = 200
         resp.content = b"x"
-        resp.json.return_value = {"id": 99, "name": "Test"}
+        if "/tag" in url:
+            resp.json.return_value = [{"id": 7, "name": "mediterran"}]
+        else:
+            resp.json.return_value = {"id": 99, "name": "Test"}
         return resp
 
     client.session.request = fake_request
@@ -103,9 +106,9 @@ def test_create_recipe_builds_correct_payload(client):
         yields=2,
     )
     assert result["id"] == 99
-    assert len(calls) == 1
-    method, url, kwargs = calls[0]
-    assert method == "POST"
+    assert len(calls) == 2  # GET /tag + POST /recipe
+    post_call = next(c for c in calls if c[0] == "POST")
+    method, url, kwargs = post_call
     assert url.endswith("/recipe")
     payload = kwargs["json"]
     assert payload["name"] == "Test"
@@ -114,7 +117,7 @@ def test_create_recipe_builds_correct_payload(client):
     assert payload["yields"] == 2
     assert payload["items"] == [{"name": "Mehl", "description": "200 g", "optional": False}]
     assert payload["steps"] == [{"text": "Schritt 1"}, {"text": "Schritt 2"}]
-    assert payload["tags"] == [{"name": "mediterran"}]
+    assert payload["tags"] == [{"id": 7}]
 
 
 def test_create_recipe_raises_on_item_without_name(client):
@@ -130,17 +133,20 @@ def test_update_recipe_builds_partial_payload(client):
         resp = Mock()
         resp.status_code = 200
         resp.content = b"x"
-        resp.json.return_value = {"id": 5, "name": "Updated"}
+        if "/tag" in url:
+            resp.json.return_value = [{"id": 3, "name": "neu"}]
+        else:
+            resp.json.return_value = {"id": 5, "name": "Updated"}
         return resp
 
     client.session.request = fake_request
     client.update_recipe(recipe_id=5, name="Updated", tags=["neu"])
-    assert len(calls) == 1
-    method, url, kwargs = calls[0]
-    assert method == "PATCH"
+    assert len(calls) == 2  # GET /tag + PATCH /recipe/5
+    patch_call = next(c for c in calls if c[0] == "PATCH")
+    method, url, kwargs = patch_call
     assert url.endswith("/recipe/5")
     payload = kwargs["json"]
-    assert payload == {"name": "Updated", "tags": [{"name": "neu"}]}
+    assert payload == {"name": "Updated", "tags": [{"id": 3}]}
 
 
 def test_update_recipe_raises_when_no_fields(client):

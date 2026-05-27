@@ -59,7 +59,7 @@ def create_recipe(
     """Create a new recipe in KitchenOwl.
     items: [{"name": "Flour", "description": "200 g"}] — description holds amount/unit.
     steps: list of step texts (plain strings).
-    tags: list of tag name strings.
+    tags: list of tag name strings — must already exist in KitchenOwl (create via app first).
     time: total time in minutes. yields: number of servings (integer)."""
     return _run(client().create_recipe, name=name, description=description,
                 items=items, steps=steps, tags=tags, time=time, yields=yields, source=source)

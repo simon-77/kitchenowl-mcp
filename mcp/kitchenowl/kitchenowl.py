@@ -69,6 +69,20 @@ class KitchenOwlClient:
         # endpoint verified
         return self._get(f"/api/household/{self.household_id}/recipe/{recipe_id}")
 
+    def _resolve_tags(self, tag_names: list) -> list:
+        existing = {t["name"].lower(): t["id"] for t in (self._get(f"/api/household/{self.household_id}/tag") or [])}
+        result = []
+        unknown = []
+        for name in tag_names:
+            tag_id = existing.get(name.lower())
+            if tag_id:
+                result.append({"id": tag_id})
+            else:
+                unknown.append(name)
+        if unknown:
+            raise KitchenOwlError(f"Unknown tags (create them in KitchenOwl first): {', '.join(unknown)}")
+        return result
+
     @staticmethod
     def _build_items(items: list) -> list:
         result = []
@@ -89,7 +103,7 @@ class KitchenOwlClient:
             "source": source,
             "items": self._build_items(items or []),
             "steps": [{"text": s} for s in (steps or [])],
-            "tags": [{"name": t} for t in (tags or [])],
+            "tags": self._resolve_tags(tags) if tags else [],
         }
         return self._post(f"/api/household/{self.household_id}/recipe", payload)
 
@@ -112,7 +126,7 @@ class KitchenOwlClient:
         if steps is not None:
             payload["steps"] = [{"text": s} for s in steps]
         if tags is not None:
-            payload["tags"] = [{"name": t} for t in tags]
+            payload["tags"] = self._resolve_tags(tags)
         if not payload:
             raise KitchenOwlError("No fields provided to update.")
         # endpoint not yet verified against live server — PATCH may need to be PUT
