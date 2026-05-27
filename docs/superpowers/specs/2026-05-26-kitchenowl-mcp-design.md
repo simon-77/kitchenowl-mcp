@@ -35,10 +35,12 @@ kochen/
 | `list_recipes` | `page`, `per_page` | Alle Rezepte (Household aus ENV) |
 | `search_recipes` | `query` | Volltextsuche |
 | `get_recipe` | `recipe_id` | Vollständiges Rezept inkl. Zutaten + Schritte |
-| `get_trashed_recipes` | — | Rezepte im Papierkorb |
-| `restore_recipe` | `recipe_id` | Rezept aus Papierkorb wiederherstellen |
-
-Kein `delete` — dafür die KitchenOwl-App nutzen. `create_recipe` und `update_recipe` sind vorhanden.
+| `create_recipe` | `name`, `description`, `items`, `steps`, `tags`, `time`, `yields`, `source` | Neues Rezept anlegen |
+| `update_recipe` | `recipe_id`, + beliebige Felder | Bestehendes Rezept partiell aktualisieren |
+| `delete_recipe` | `recipe_id` | Rezept permanent löschen (nicht rückgängig machbar) |
+| `list_tags` | — | Alle verfügbaren Tags auflisten |
+| `get_trashed_recipes` | — | *(nicht unterstützt — KitchenOwl löscht permanent)* |
+| `restore_recipe` | `recipe_id` | *(nicht unterstützt — kein Papierkorb)* |
 
 ### Favorites
 | Tool | Parameter | Beschreibung |

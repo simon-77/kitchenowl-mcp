@@ -43,10 +43,6 @@ class KitchenOwlClient:
         kwargs = {"json": data} if data is not None else {}
         return self._request("POST", path, **kwargs)
 
-    def _patch(self, path, data=None):
-        kwargs = {"json": data} if data is not None else {}
-        return self._request("PATCH", path, **kwargs)
-
     def _delete(self, path, data=None):
         kwargs = {"json": data} if data is not None else {}
         return self._request("DELETE", path, **kwargs)
