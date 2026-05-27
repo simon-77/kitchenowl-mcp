@@ -38,7 +38,7 @@ kochen/
 | `get_trashed_recipes` | — | Rezepte im Papierkorb |
 | `restore_recipe` | `recipe_id` | Rezept aus Papierkorb wiederherstellen |
 
-Kein `create`/`update`/`delete` — dafür die KitchenOwl-App nutzen.
+Kein `delete` — dafür die KitchenOwl-App nutzen. `create_recipe` und `update_recipe` sind vorhanden.
 
 ### Favorites
 | Tool | Parameter | Beschreibung |
