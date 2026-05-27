@@ -46,6 +46,44 @@ def get_recipe(recipe_id: int) -> dict:
 
 
 @mcp.tool()
+def create_recipe(
+    name: str,
+    description: str = "",
+    items: list[dict] | None = None,
+    steps: list[str] | None = None,
+    tags: list[str] | None = None,
+    time: int = 0,
+    yields: str = "",
+    source: str = "",
+) -> dict:
+    """Create a new recipe in KitchenOwl.
+    items: [{"name": "Flour", "description": "200 g"}] — description holds amount/unit.
+    steps: list of step texts (plain strings).
+    tags: list of tag name strings.
+    time: total time in minutes. yields: e.g. '4 Portionen'."""
+    return _run(client().create_recipe, name=name, description=description,
+                items=items, steps=steps, tags=tags, time=time, yields=yields, source=source)
+
+
+@mcp.tool()
+def update_recipe(
+    recipe_id: int,
+    name: str | None = None,
+    description: str | None = None,
+    items: list[dict] | None = None,
+    steps: list[str] | None = None,
+    tags: list[str] | None = None,
+    time: int | None = None,
+    yields: str | None = None,
+    source: str | None = None,
+) -> dict:
+    """Update an existing recipe (partial — only provided fields are changed).
+    If items or steps are provided, they replace the full list."""
+    return _run(client().update_recipe, recipe_id=recipe_id, name=name, description=description,
+                items=items, steps=steps, tags=tags, time=time, yields=yields, source=source)
+
+
+@mcp.tool()
 def get_trashed_recipes() -> dict | list:
     """List recipes in the KitchenOwl trash. NOTE: KitchenOwl does not support a trash bin — recipes are permanently deleted."""
     return _run(client().get_trashed_recipes)

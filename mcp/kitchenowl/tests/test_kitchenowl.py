@@ -81,6 +81,40 @@ def test_add_to_meal_plan_date_as_unix_ms(client):
     assert payload["cooking_date"] == 1768435200000
 
 
+def test_create_recipe_builds_correct_payload(client):
+    calls = []
+
+    def fake_request(method, url, **kwargs):
+        calls.append((method, url, kwargs))
+        resp = Mock()
+        resp.status_code = 200
+        resp.content = b"x"
+        resp.json.return_value = {"id": 99, "name": "Test"}
+        return resp
+
+    client.session.request = fake_request
+    result = client.create_recipe(
+        name="Test",
+        description="Desc",
+        items=[{"name": "Mehl", "description": "200 g"}],
+        steps=["Schritt 1", "Schritt 2"],
+        tags=["mediterran"],
+        time=30,
+        yields="2 Portionen",
+    )
+    assert result["id"] == 99
+    assert len(calls) == 1
+    method, url, kwargs = calls[0]
+    assert method == "POST"
+    assert "/recipe" in url
+    payload = kwargs["json"]
+    assert payload["name"] == "Test"
+    assert payload["items"] == [{"name": "Mehl", "description": "200 g", "optional": False}]
+    assert payload["steps"] == [{"text": "Schritt 1"}, {"text": "Schritt 2"}]
+    assert payload["tags"] == [{"name": "mediterran"}]
+    assert payload["time"] == 30
+
+
 def test_all_tools_registered():
     import os
     os.environ.setdefault("KITCHENOWL_URL", "https://kitchenowl.test")
@@ -89,6 +123,7 @@ def test_all_tools_registered():
     tool_names = set(server.mcp._tool_manager._tools.keys())
     expected = {
         "list_recipes", "search_recipes", "get_recipe",
+        "create_recipe", "update_recipe",
         "get_trashed_recipes", "restore_recipe",
         "get_favorites", "toggle_favorite",
         "get_shopping_list", "add_to_shopping_list",

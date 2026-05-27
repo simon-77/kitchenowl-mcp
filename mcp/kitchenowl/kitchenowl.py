@@ -43,6 +43,10 @@ class KitchenOwlClient:
         kwargs = {"json": data} if data is not None else {}
         return self._request("POST", path, **kwargs)
 
+    def _patch(self, path, data=None):
+        kwargs = {"json": data} if data is not None else {}
+        return self._request("PATCH", path, **kwargs)
+
     def _delete(self, path, data=None):
         kwargs = {"json": data} if data is not None else {}
         return self._request("DELETE", path, **kwargs)
@@ -64,6 +68,49 @@ class KitchenOwlClient:
     def get_recipe(self, recipe_id: int):
         # endpoint verified
         return self._get(f"/api/household/{self.household_id}/recipe/{recipe_id}")
+
+    def create_recipe(self, name: str, description: str = "", items: list | None = None,
+                      steps: list | None = None, tags: list | None = None,
+                      time: int = 0, yields: str = "", source: str = "") -> dict:
+        payload = {
+            "name": name,
+            "description": description,
+            "time": time,
+            "yields": yields,
+            "source": source,
+            "items": [
+                {"name": i["name"], "description": i.get("description", ""), "optional": i.get("optional", False)}
+                for i in (items or [])
+            ],
+            "steps": [{"text": s} for s in (steps or [])],
+            "tags": [{"name": t} for t in (tags or [])],
+        }
+        return self._post(f"/api/household/{self.household_id}/recipe", payload)
+
+    def update_recipe(self, recipe_id: int, name: str | None = None, description: str | None = None,
+                      items: list | None = None, steps: list | None = None, tags: list | None = None,
+                      time: int | None = None, yields: str | None = None, source: str | None = None) -> dict:
+        payload: dict = {}
+        if name is not None:
+            payload["name"] = name
+        if description is not None:
+            payload["description"] = description
+        if time is not None:
+            payload["time"] = time
+        if yields is not None:
+            payload["yields"] = yields
+        if source is not None:
+            payload["source"] = source
+        if items is not None:
+            payload["items"] = [
+                {"name": i["name"], "description": i.get("description", ""), "optional": i.get("optional", False)}
+                for i in items
+            ]
+        if steps is not None:
+            payload["steps"] = [{"text": s} for s in steps]
+        if tags is not None:
+            payload["tags"] = [{"name": t} for t in tags]
+        return self._patch(f"/api/household/{self.household_id}/recipe/{recipe_id}", payload)
 
     def get_trashed_recipes(self):
         # KitchenOwl has no server-side trash — recipes are hard-deleted.
