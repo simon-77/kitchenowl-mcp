@@ -50,7 +50,6 @@ def create_recipe(
     name: str,
     description: str = "",
     items: list[dict] | None = None,
-    steps: list[str] | None = None,
     tags: list[str] | None = None,
     time: int = 0,
     yields: int = 0,
@@ -58,11 +57,11 @@ def create_recipe(
 ) -> dict:
     """Create a new recipe in KitchenOwl.
     items: [{"name": "Flour", "description": "200 g"}] — description holds amount/unit.
-    steps: list of step texts (plain strings).
-    tags: list of tag name strings — must already exist in KitchenOwl (create via app first).
-    time: total time in minutes. yields: number of servings (integer)."""
+    tags: list of tag name strings — created automatically if they don't exist yet.
+    time: total time in minutes. yields: number of servings (integer).
+    NOTE: The KitchenOwl REST API does not support steps — add them in the app after creation."""
     return _run(client().create_recipe, name=name, description=description,
-                items=items, steps=steps, tags=tags, time=time, yields=yields, source=source)
+                items=items, tags=tags, time=time, yields=yields, source=source)
 
 
 @mcp.tool()
@@ -71,7 +70,6 @@ def update_recipe(
     name: str | None = None,
     description: str | None = None,
     items: list[dict] | None = None,
-    steps: list[str] | None = None,
     tags: list[str] | None = None,
     time: int | None = None,
     yields: int | None = None,
@@ -79,10 +77,12 @@ def update_recipe(
 ) -> dict:
     """Update an existing recipe (partial — only provided fields are changed).
     Get recipe_id via list_recipes or search_recipes first.
-    items/steps/tags replace the FULL list when provided (not appended).
-    items format: [{"name": "Flour", "description": "200 g"}]."""
+    items/tags replace the FULL list when provided (not appended).
+    items format: [{"name": "Flour", "description": "200 g"}].
+    tags: list of tag name strings — created automatically if they don't exist yet.
+    NOTE: The KitchenOwl REST API does not support updating steps — edit them in the app."""
     return _run(client().update_recipe, recipe_id=recipe_id, name=name, description=description,
-                items=items, steps=steps, tags=tags, time=time, yields=yields, source=source)
+                items=items, tags=tags, time=time, yields=yields, source=source)
 
 
 @mcp.tool()

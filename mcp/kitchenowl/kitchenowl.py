@@ -49,7 +49,6 @@ class KitchenOwlClient:
 
     # ── Recipes ──────────────────────────────────────────────────────
     def list_recipes(self, page: int = 0, per_page: int = 20):
-        # endpoint verified
         return self._get(f"/api/household/{self.household_id}/recipe",
                          offset=page * per_page, limit=per_page)
 
@@ -64,20 +63,6 @@ class KitchenOwlClient:
     def get_recipe(self, recipe_id: int):
         return self._get(f"/api/recipe/{recipe_id}")
 
-    def _resolve_tags(self, tag_names: list) -> list:
-        existing = {t["name"].lower(): t["id"] for t in (self._get(f"/api/household/{self.household_id}/tag") or [])}
-        result = []
-        unknown = []
-        for name in tag_names:
-            tag_id = existing.get(name.lower())
-            if tag_id:
-                result.append({"id": tag_id})
-            else:
-                unknown.append(name)
-        if unknown:
-            raise KitchenOwlError(f"Unknown tags (create them in KitchenOwl first): {', '.join(unknown)}")
-        return result
-
     @staticmethod
     def _build_items(items: list) -> list:
         result = []
@@ -88,8 +73,10 @@ class KitchenOwlClient:
         return result
 
     def create_recipe(self, name: str, description: str = "", items: list | None = None,
-                      steps: list | None = None, tags: list | None = None,
-                      time: int = 0, yields: int = 0, source: str = "") -> dict:
+                      tags: list | None = None, time: int = 0, yields: int = 0,
+                      source: str = "") -> dict:
+        # Note: KitchenOwl REST API does not support recipe steps — add them in the app.
+        # Tags are passed as name strings; the API creates them automatically if missing.
         payload = {
             "name": name,
             "description": description,
@@ -97,14 +84,16 @@ class KitchenOwlClient:
             "yields": yields,
             "source": source,
             "items": self._build_items(items or []),
-            "steps": [{"text": s} for s in (steps or [])],
-            "tags": self._resolve_tags(tags) if tags else [],
+            "tags": tags or [],
         }
         return self._post(f"/api/household/{self.household_id}/recipe", payload)
 
     def update_recipe(self, recipe_id: int, name: str | None = None, description: str | None = None,
-                      items: list | None = None, steps: list | None = None, tags: list | None = None,
-                      time: int | None = None, yields: int | None = None, source: str | None = None) -> dict:
+                      items: list | None = None, tags: list | None = None,
+                      time: int | None = None, yields: int | None = None,
+                      source: str | None = None) -> dict:
+        # Note: KitchenOwl REST API does not support updating recipe steps.
+        # Tags are passed as name strings; the API creates them automatically if missing.
         payload: dict = {}
         if name is not None:
             payload["name"] = name
@@ -118,10 +107,8 @@ class KitchenOwlClient:
             payload["source"] = source
         if items is not None:
             payload["items"] = self._build_items(items)
-        if steps is not None:
-            payload["steps"] = [{"text": s} for s in steps]
         if tags is not None:
-            payload["tags"] = self._resolve_tags(tags)
+            payload["tags"] = tags
         if not payload:
             raise KitchenOwlError("No fields provided to update.")
         return self._post(f"/api/recipe/{recipe_id}", payload)
@@ -133,27 +120,21 @@ class KitchenOwlClient:
         return self._get(f"/api/household/{self.household_id}/tag") or []
 
     def get_trashed_recipes(self):
-        # KitchenOwl has no server-side trash — recipes are hard-deleted.
-        # This feature does not exist in the API.
         raise KitchenOwlError("KitchenOwl does not support a recipe trash/recycle bin — recipes are permanently deleted.")
 
     def restore_recipe(self, recipe_id: int):
-        # KitchenOwl has no server-side trash — nothing to restore.
         raise KitchenOwlError("KitchenOwl does not support recipe restore — recipes are permanently deleted.")
 
     # ── Favorites ────────────────────────────────────────────────────
     def get_favorites(self):
-        # KitchenOwl has no server-side wishlist/favorites — it is stored client-side only.
         raise KitchenOwlError("KitchenOwl does not support a server-side favorites/wishlist — this feature is client-side only.")
 
     def toggle_favorite(self, recipe_id: int):
-        # KitchenOwl has no server-side wishlist/favorites — it is stored client-side only.
         raise KitchenOwlError("KitchenOwl does not support a server-side favorites/wishlist — this feature is client-side only.")
 
     # ── Shopping List ─────────────────────────────────────────────────
     def _get_default_list_id(self) -> int:
         if self._default_list_id is None:
-            # endpoint verified: GET /api/household/{hh}/shoppinglist returns list of lists with embedded items
             lists = self._get(f"/api/household/{self.household_id}/shoppinglist")
             if isinstance(lists, list) and lists:
                 self._default_list_id = lists[0].get("id", 1)
@@ -162,14 +143,12 @@ class KitchenOwlClient:
         return self._default_list_id
 
     def get_shopping_list(self):
-        # endpoint verified: items are embedded in the shoppinglist response
         lists = self._get(f"/api/household/{self.household_id}/shoppinglist")
         if isinstance(lists, list) and lists:
             return lists[0].get("items", [])
         return []
 
     def add_to_shopping_list(self, name: str, description: str | None = None):
-        # endpoint verified: POST /api/shoppinglist/{id}/add-item-by-name
         list_id = self._get_default_list_id()
         return self._post(
             f"/api/shoppinglist/{list_id}/add-item-by-name",
@@ -177,8 +156,6 @@ class KitchenOwlClient:
         )
 
     def add_recipe_to_shopping_list(self, recipe_id: int):
-        # endpoint verified: POST /api/shoppinglist/{id}/recipeitems
-        # requires {"items": [{"id": N, "name": "...", "description": "...", "optional": bool}]}
         recipe = self.get_recipe(recipe_id)
         items = recipe.get("items", [])
         payload_items = [
@@ -199,7 +176,6 @@ class KitchenOwlClient:
         return {"added": len(payload_items), "recipe": recipe.get("name")}
 
     def remove_from_shopping_list(self, item_id: int):
-        # endpoint verified: DELETE /api/shoppinglist/{id}/item with body {"item_id": N}
         list_id = self._get_default_list_id()
         return self._delete(
             f"/api/shoppinglist/{list_id}/item",
@@ -212,11 +188,9 @@ class KitchenOwlClient:
 
     # ── Meal Plan ─────────────────────────────────────────────────────
     def get_meal_plan(self):
-        # endpoint verified: GET /api/household/{hh}/planner
         return self._get(f"/api/household/{self.household_id}/planner")
 
     def add_to_meal_plan(self, recipe_id: int, date: str | None = None):
-        # endpoint verified: POST /api/household/{hh}/planner/recipe
         # API requires cooking_date as Unix ms; omit for unscheduled
         payload: dict = {"recipe_id": recipe_id}
         if date:
@@ -229,6 +203,4 @@ class KitchenOwlClient:
         )
 
     def remove_from_meal_plan(self, recipe_id: int):
-        # endpoint verified: DELETE /api/household/{hh}/planner/recipe/{recipe_id}
-        # KitchenOwl API identifies planner entries by recipe_id, not a separate plan-item id
         return self._delete(f"/api/household/{self.household_id}/planner/recipe/{recipe_id}")
