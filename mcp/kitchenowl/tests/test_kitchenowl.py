@@ -106,13 +106,46 @@ def test_create_recipe_builds_correct_payload(client):
     assert len(calls) == 1
     method, url, kwargs = calls[0]
     assert method == "POST"
-    assert "/recipe" in url
+    assert url.endswith("/recipe")
     payload = kwargs["json"]
     assert payload["name"] == "Test"
+    assert payload["description"] == "Desc"
+    assert payload["time"] == 30
+    assert payload["yields"] == "2 Portionen"
     assert payload["items"] == [{"name": "Mehl", "description": "200 g", "optional": False}]
     assert payload["steps"] == [{"text": "Schritt 1"}, {"text": "Schritt 2"}]
     assert payload["tags"] == [{"name": "mediterran"}]
-    assert payload["time"] == 30
+
+
+def test_create_recipe_raises_on_item_without_name(client):
+    with pytest.raises(Exception, match="name"):
+        client.create_recipe(name="X", items=[{"description": "200 g"}])
+
+
+def test_update_recipe_builds_partial_payload(client):
+    calls = []
+
+    def fake_request(method, url, **kwargs):
+        calls.append((method, url, kwargs))
+        resp = Mock()
+        resp.status_code = 200
+        resp.content = b"x"
+        resp.json.return_value = {"id": 5, "name": "Updated"}
+        return resp
+
+    client.session.request = fake_request
+    client.update_recipe(recipe_id=5, name="Updated", tags=["neu"])
+    assert len(calls) == 1
+    method, url, kwargs = calls[0]
+    assert method == "PATCH"
+    assert url.endswith("/recipe/5")
+    payload = kwargs["json"]
+    assert payload == {"name": "Updated", "tags": [{"name": "neu"}]}
+
+
+def test_update_recipe_raises_when_no_fields(client):
+    with pytest.raises(Exception, match="No fields"):
+        client.update_recipe(recipe_id=5)
 
 
 def test_all_tools_registered():

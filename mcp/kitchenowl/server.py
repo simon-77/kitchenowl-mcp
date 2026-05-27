@@ -78,7 +78,9 @@ def update_recipe(
     source: str | None = None,
 ) -> dict:
     """Update an existing recipe (partial — only provided fields are changed).
-    If items or steps are provided, they replace the full list."""
+    Get recipe_id via list_recipes or search_recipes first.
+    items/steps/tags replace the FULL list when provided (not appended).
+    items format: [{"name": "Flour", "description": "200 g"}]."""
     return _run(client().update_recipe, recipe_id=recipe_id, name=name, description=description,
                 items=items, steps=steps, tags=tags, time=time, yields=yields, source=source)
 

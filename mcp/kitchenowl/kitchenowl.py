@@ -69,6 +69,15 @@ class KitchenOwlClient:
         # endpoint verified
         return self._get(f"/api/household/{self.household_id}/recipe/{recipe_id}")
 
+    @staticmethod
+    def _build_items(items: list) -> list:
+        result = []
+        for i in items:
+            if not i.get("name"):
+                raise KitchenOwlError(f"Each item must have a 'name' key, got: {i}")
+            result.append({"name": i["name"], "description": i.get("description", ""), "optional": i.get("optional", False)})
+        return result
+
     def create_recipe(self, name: str, description: str = "", items: list | None = None,
                       steps: list | None = None, tags: list | None = None,
                       time: int = 0, yields: str = "", source: str = "") -> dict:
@@ -78,10 +87,7 @@ class KitchenOwlClient:
             "time": time,
             "yields": yields,
             "source": source,
-            "items": [
-                {"name": i["name"], "description": i.get("description", ""), "optional": i.get("optional", False)}
-                for i in (items or [])
-            ],
+            "items": self._build_items(items or []),
             "steps": [{"text": s} for s in (steps or [])],
             "tags": [{"name": t} for t in (tags or [])],
         }
@@ -102,14 +108,14 @@ class KitchenOwlClient:
         if source is not None:
             payload["source"] = source
         if items is not None:
-            payload["items"] = [
-                {"name": i["name"], "description": i.get("description", ""), "optional": i.get("optional", False)}
-                for i in items
-            ]
+            payload["items"] = self._build_items(items)
         if steps is not None:
             payload["steps"] = [{"text": s} for s in steps]
         if tags is not None:
             payload["tags"] = [{"name": t} for t in tags]
+        if not payload:
+            raise KitchenOwlError("No fields provided to update.")
+        # endpoint not yet verified against live server — PATCH may need to be PUT
         return self._patch(f"/api/household/{self.household_id}/recipe/{recipe_id}", payload)
 
     def get_trashed_recipes(self):
