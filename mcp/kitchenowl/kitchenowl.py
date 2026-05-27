@@ -129,8 +129,7 @@ class KitchenOwlClient:
             payload["tags"] = self._resolve_tags(tags)
         if not payload:
             raise KitchenOwlError("No fields provided to update.")
-        # endpoint not yet verified against live server — PATCH may need to be PUT
-        return self._patch(f"/api/household/{self.household_id}/recipe/{recipe_id}", payload)
+        return self._post(f"/api/household/{self.household_id}/recipe/{recipe_id}", payload)
 
     def get_trashed_recipes(self):
         # KitchenOwl has no server-side trash — recipes are hard-deleted.

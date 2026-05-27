@@ -142,8 +142,8 @@ def test_update_recipe_builds_partial_payload(client):
     client.session.request = fake_request
     client.update_recipe(recipe_id=5, name="Updated", tags=["neu"])
     assert len(calls) == 2  # GET /tag + PATCH /recipe/5
-    patch_call = next(c for c in calls if c[0] == "PATCH")
-    method, url, kwargs = patch_call
+    post_call = next(c for c in calls if c[0] == "POST" and "/recipe/5" in c[1])
+    method, url, kwargs = post_call
     assert url.endswith("/recipe/5")
     payload = kwargs["json"]
     assert payload == {"name": "Updated", "tags": [{"id": 3}]}
