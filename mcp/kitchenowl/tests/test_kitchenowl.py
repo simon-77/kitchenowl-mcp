@@ -179,6 +179,24 @@ def test_list_tags_returns_list(client, mock_get):
     assert result[0]["name"] == "vegetarisch"
 
 
+def test_list_tags_returns_empty_list_when_none(client, mock_get):
+    mock_get(None)
+    result = client.list_tags()
+    assert result == []
+
+
+def test_delete_recipe_404_raises_error(client):
+    from unittest.mock import Mock
+    def fake_request(method, url, **kwargs):
+        resp = Mock()
+        resp.status_code = 404
+        resp.content = b"x"
+        return resp
+    client.session.request = fake_request
+    with pytest.raises(Exception, match="Not found"):
+        client.delete_recipe(999)
+
+
 def test_all_tools_registered():
     import os
     os.environ.setdefault("KITCHENOWL_URL", "https://kitchenowl.test")

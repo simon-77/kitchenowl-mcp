@@ -87,7 +87,7 @@ def update_recipe(
 
 @mcp.tool()
 def delete_recipe(recipe_id: int) -> dict:
-    """Permanently delete a recipe. This cannot be undone. Get recipe_id via list_recipes or search_recipes first."""
+    """Permanently delete a recipe. This cannot be undone. Returns {} on success. Get recipe_id via list_recipes or search_recipes first."""
     return _run(client().delete_recipe, recipe_id)
 
 
