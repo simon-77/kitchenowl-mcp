@@ -62,8 +62,7 @@ class KitchenOwlClient:
         return results
 
     def get_recipe(self, recipe_id: int):
-        # endpoint verified
-        return self._get(f"/api/household/{self.household_id}/recipe/{recipe_id}")
+        return self._get(f"/api/recipe/{recipe_id}")
 
     def _resolve_tags(self, tag_names: list) -> list:
         existing = {t["name"].lower(): t["id"] for t in (self._get(f"/api/household/{self.household_id}/tag") or [])}
@@ -125,10 +124,10 @@ class KitchenOwlClient:
             payload["tags"] = self._resolve_tags(tags)
         if not payload:
             raise KitchenOwlError("No fields provided to update.")
-        return self._post(f"/api/household/{self.household_id}/recipe/{recipe_id}", payload)
+        return self._post(f"/api/recipe/{recipe_id}", payload)
 
     def delete_recipe(self, recipe_id: int) -> dict:
-        return self._delete(f"/api/household/{self.household_id}/recipe/{recipe_id}")
+        return self._delete(f"/api/recipe/{recipe_id}")
 
     def list_tags(self) -> list:
         return self._get(f"/api/household/{self.household_id}/tag") or []
